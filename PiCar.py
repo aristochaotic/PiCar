@@ -37,6 +37,7 @@ def process(img):
 
     return img
 
+# print image img
 def plot(img):
     plt.subplot(2, 2, 2)
     plt,imshow(img, 'gray')
@@ -73,6 +74,13 @@ def stop():
 
     left.run(Adafruit_MotorHAT.RELEASE)
     right.run(Adafruit_MotorHAT.RELEASE)
+
+# image comparison functions
+def isStop(img):
+
+def isRight(img):
+
+def isLeft(img):
     
 
 # recommended for auto-disabling motors on shutdown!
