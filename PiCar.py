@@ -6,12 +6,13 @@ from time import sleep
 import RPi.GPIO as GPIO
 from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
 import atexit
+from skimage.measure import structural_similarity as ssim
 
 # accesses stored images for cross-checking with the feed
 # TODO: store processed versions of these images
-stop = cv2.imread('/assets/images/stop.png', 0)
-left = cv2.imread('/assets/images/left.jpeg', 0)
-right = cv2.imread('/assets/images/right.jpeg', 0)
+stopS = cv2.imread('/assets/images/stopBW.png', 0)
+leftS = cv2.imread('/assets/images/left.jpeg', 0)
+rightS = cv2.imread('/assets/images/right.jpeg', 0)
 
 camera = PiCamera()
 
@@ -29,13 +30,19 @@ right = mh.getMotor(3)
 
 # processes image for cross comparison with capture
 # returns black and white image after Gaussian blur
-def process(img):
+def thresholdImage(img):
     img = cv2.medianBlur(img,5)
 
     ret,th1 = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
             cv2.THRESH_BINARY,11,2)
 
     return img
+
+# returns true if imgA is similar to a certain degree to imgB, i.e. if they are different images of the same sign
+# uses the Structural Similarity Index (SSIM) method
+def isSimilar(imgA, imgB):
+    return ssim(imgA, imgB) > 0
+
 
 # print image img
 def plot(img):
@@ -75,19 +82,27 @@ def stop():
     left.run(Adafruit_MotorHAT.RELEASE)
     right.run(Adafruit_MotorHAT.RELEASE)
 
-# image comparison functions
-def isStop(img):
-
-def isRight(img):
-
-def isLeft(img):
-    
-
 # recommended for auto-disabling motors on shutdown!
 def turnOffMotors():
 	mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
 	mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
 	mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
 	mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+
+# 'main' functionality, will need to adjust delay
+if(isSimilar(cap, stopS)):
+    stop()
+elif(isSimilar(cap, leftS)):
+    left()
+    time.sleep(1)
+    forward()
+elif(isSimilar(cap, rightS)):
+    right()
+    time.sleep(1)
+    forward()
+else:
+    forward()
+    
+    
 
 atexit.register(turnOffMotors)
