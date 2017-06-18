@@ -9,14 +9,13 @@ import atexit
 from skimage.measure import structural_similarity as ssim
 
 # accesses stored images for cross-checking with the feed
-# TODO: store processed versions of these images
 stopS = cv2.imread('/assets/images/stopBW.png', 0)
 leftS = cv2.imread('/assets/images/left.jpeg', 0)
 rightS = cv2.imread('/assets/images/right.jpeg', 0)
 
+# starts camera and captures image
 camera = PiCamera()
 
-# starts camera and captures image
 camera.start_preview()
 camera.capture('capture.png')
 cap = cv2.imgread('capture.png', 0)
@@ -40,6 +39,7 @@ def thresholdImage(img):
 
 # returns true if imgA is similar to a certain degree to imgB, i.e. if they are different images of the same sign
 # uses the Structural Similarity Index (SSIM) method
+# research done here: http://www.pyimagesearch.com/2014/09/15/python-compare-two-images/ 
 def isSimilar(imgA, imgB):
     return ssim(imgA, imgB) > 0
 
@@ -82,14 +82,16 @@ def stop():
     left.run(Adafruit_MotorHAT.RELEASE)
     right.run(Adafruit_MotorHAT.RELEASE)
 
-# recommended for auto-disabling motors on shutdown!
+# recommended for auto-disabling motors on shutdown
 def turnOffMotors():
 	mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
 	mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
 	mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
 	mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
-# 'main' functionality, will need to adjust delay
+# 'main' functionality, will need to adjust delays during testing
+# moves forward by default
+# stops on a stop sign, turns left at a left arrow, and turns right at a right arrow
 if(isSimilar(cap, stopS)):
     stop()
 elif(isSimilar(cap, leftS)):
